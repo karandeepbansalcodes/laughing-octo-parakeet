@@ -1,0 +1,13 @@
+Here’s a structured, tabular version of the observability workshop template, designed to capture key input areas in a clear, organized format.
+
+| **Section**                    | **Description**                                                                                          | **Key Inputs Needed**                                                      |
+|--------------------------------|----------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|
+| **Workshop Objectives**        | Define goals and objectives for observability in Confluence and Jira.                                    | Business goals from PMs, technical goals, known challenges.               |
+| **Key Metrics & KPIs**         | List critical metrics and KPIs to track (e.g., response time, error rates, user engagement).             | SLIs/SLOs/SLAs, performance, operational, and user engagement metrics.     |
+| **Logging and Tracing**        | Identify logging requirements and key workflows to trace for end-to-end visibility.                      | Log types (error, system, app), trace points, critical user workflows.    |
+| **Dashboard Design**           | Outline the dashboards needed, both high-level and detailed views, with alerting requirements.           | Dashboard types, layout ideas, alert criteria, thresholds.                |
+| **Anomaly Detection & Alerting** | Define anomaly types and alerting strategies to monitor for issues like traffic spikes or latency.       | Anomaly indicators, alert thresholds, escalation paths, reduce alert fatigue. |
+| **Data Visualization & UX**     | Plan for user-friendly dashboard designs and team-specific customizations.                               | Customization needs, usability features, access controls, sharing options. |
+| **Open Discussion & Next Steps** | Space for team discussions, feedback, and a plan for action items and follow-up steps.                  | Assigned action items, feedback points, next steps for implementation.     |
+
+This template should give a clear framework for collecting inputs and guiding discussions, aligning both technical and business perspectives for effective observability in Confluence and Jira.
