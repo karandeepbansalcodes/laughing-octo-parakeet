@@ -1,0 +1,54 @@
+Here’s the revised ADR with the updated context and decision to reflect the move from Bitbucket/Jenkins to a GitLab and Nexus stack.
+
+---
+
+### **Architecture Decision Record (ADR)**
+#### **Title**: Implement Synthetic Monitoring in Nexus for Package Upload and Download Times in GitLab-Nexus Stack
+
+**Date**: [Insert Date]
+
+#### **Context**
+As part of our migration from a Bitbucket/Jenkins/Nexus setup to a GitLab/Nexus stack, we aim to implement synthetic monitoring to capture package upload and download times. This transition aligns with our strategy to consolidate our DevOps tools and improve operational efficiency. Monitoring these package management operations in Nexus will provide essential insights into build efficiency and developer productivity within the new GitLab-based CI/CD pipeline.
+
+Our objectives are to:
+- Ensure seamless integration of synthetic monitoring with the GitLab and Nexus stack.
+- Capture and analyze upload/download performance metrics as part of routine synthetic checks.
+- Enable visualization of performance trends and proactive alerting in Kibana.
+
+#### **Decision**
+Implement synthetic checks in Nexus as part of the GitLab pipeline to:
+1. **Simulate Package Operations**: Set up synthetic tests in the GitLab CI/CD pipeline to perform pull, build, and publish operations on test packages within Nexus.
+2. **Capture Performance Metrics**: Track the time taken for upload and download actions, logging relevant data to assess repository performance.
+3. **Integrate with Observability Stack**:
+   - Send captured metrics to Elasticsearch for analysis.
+   - Develop Kibana dashboards to visualize upload and download trends.
+   - Define and set up alerts in Kibana based on thresholds for upload/download times to detect and notify teams of performance degradations.
+
+#### **Alternatives Considered**
+1. **Continue Using Bitbucket/Jenkins for Synthetic Monitoring**: Retain the existing synthetic monitoring setup within the Bitbucket and Jenkins environment.
+   - *Rejected* due to the decision to consolidate all CI/CD and monitoring functions in the GitLab and Nexus stack for operational simplicity and improved integration.
+2. **Rely Solely on Nexus Logs**: Use Nexus’s own logs to capture upload and download times.
+   - *Rejected* as it lacks the detailed, proactive monitoring capabilities offered by synthetic tests and could lead to delayed detection of issues.
+
+#### **Consequences**
+- **Positive**:
+  - Consistency in synthetic monitoring within the new GitLab-Nexus pipeline.
+  - Improved proactive alerting on upload/download issues, minimizing CI/CD pipeline disruptions.
+  - Unified observability in Kibana, enabling comprehensive analysis and reporting on package management performance.
+  
+- **Negative**:
+  - Resource overhead for setting up and maintaining synthetic checks in GitLab.
+  - Potential for false positives from network or infrastructure-related issues during synthetic checks.
+
+#### **Status**
+*Proposed* - Pending approval and alignment with application owners and observability stakeholders.
+
+#### **Next Steps**
+1. Design and configure synthetic checks in GitLab to simulate Nexus package operations.
+2. Set up Elasticsearch integration for metric ingestion.
+3. Develop Kibana dashboards for visibility into package upload/download performance.
+4. Configure alerts in Kibana and refine thresholds in collaboration with application teams.
+
+---
+
+This updated ADR reflects the move to GitLab for CI/CD integration, providing a unified approach to monitoring Nexus performance in the new stack. Let me know if there are any additional specifics you’d like included!
