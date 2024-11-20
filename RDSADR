@@ -1,0 +1,79 @@
+### Architectural Decision Record (ADR)  
+
+#### **Title**: AWS RDS Observability Data Collection and Integration with Elastic Kibana  
+
+#### **Status**: Proposed  
+
+#### **Date**: November 20, 2024  
+
+---
+
+### **Context**  
+To enhance observability and performance monitoring for AWS RDS instances, we aim to collect critical data points that will provide insights into the health, usage, and performance of the database. The goal is to centralize this data in Elastic Kibana via Kinesis streams for visualization, alerting, and analysis.  
+
+The observability requirements include:  
+1. **RDS Snapshots**: Information about automated and manual snapshots for auditing and backup monitoring.  
+2. **RDS OS Metrics**: Low-level operating system metrics such as CPU, memory, and disk usage from enhanced monitoring.  
+3. **RDS CloudWatch Metrics**: Database-specific metrics like connections, query latency, IOPS, and throughput.  
+4. **Queries to RDS DB**: Query logs for analyzing performance bottlenecks, long-running queries, and usage patterns.  
+
+---
+
+### **Decision**  
+We will implement a system to extract the above data from AWS RDS and stream it to Elastic Kibana using Amazon Kinesis.  
+
+**Key steps in the implementation**:  
+1. **Data Sources**:  
+   - Enable and retrieve **RDS Snapshots** via the AWS API.  
+   - Enable **Enhanced Monitoring** to fetch OS metrics (1-second granularity).  
+   - Use **CloudWatch Logs and Metrics** for database performance metrics.  
+   - Enable **Query Logging** (via the `slow query log` or `general query log`).  
+
+2. **Streaming Mechanism**:  
+   - Configure Amazon Kinesis Data Streams to ingest data from the above sources.  
+   - Utilize Amazon Kinesis Firehose to batch and compress data before delivering it to Elastic Kibana.  
+
+3. **Integration with Kibana**:  
+   - Set up Kibana dashboards to visualize the metrics, query logs, and snapshots.  
+   - Configure alerts and anomaly detection for critical thresholds.  
+
+---
+
+### **Consequences**  
+**Positive Impacts**:  
+- **Improved Observability**: Comprehensive insights into RDS performance and health.  
+- **Centralized Monitoring**: Consolidation of logs and metrics into Kibana for a unified view.  
+- **Proactive Alerts**: Early detection of issues with customized alerting and anomaly detection.  
+
+**Trade-offs**:  
+- **Cost Overhead**: Additional costs associated with Kinesis streams, Firehose, and Elastic storage.  
+- **Latency**: Near real-time but not instantaneous data visualization in Kibana.  
+- **Complexity**: Additional integration effort and operational overhead for managing the pipeline.  
+
+---
+
+### **Alternatives Considered**  
+1. **Direct Export to Elastic**:  
+   - Rejected due to lack of native support for all data types (e.g., OS metrics, snapshots).  
+
+2. **Use of Amazon Managed Grafana**:  
+   - While viable, it was not selected due to the team's familiarity and existing setup with Elastic Kibana.  
+
+3. **Self-hosted Data Pipeline**:  
+   - Dismissed due to higher maintenance overhead compared to managed services like Kinesis.  
+
+---
+
+### **Implementation Plan**  
+1. Enable required logs and monitoring for RDS instances.  
+2. Set up Kinesis streams and Firehose for data ingestion.  
+3. Develop parsers and transform scripts for data normalization before indexing in Elastic.  
+4. Design Kibana dashboards for visualizing snapshots, metrics, and query logs.  
+5. Configure alerts for critical thresholds (e.g., high CPU usage, long-running queries).  
+
+---
+
+### **Review and Follow-up**  
+This ADR will be reviewed after the first month of implementation to evaluate effectiveness and address potential gaps. Future iterations may include additional features like ML-based anomaly detection or integrations with other systems.  
+
+---  
