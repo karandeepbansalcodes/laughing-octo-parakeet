@@ -1,0 +1,166 @@
+You can modify the Python script to capture the latency times for each operation, structure them as a JSON payload, and send them to an endpoint using Python's `requests` library. Here's the updated approach:
+
+---
+
+### **Updated Python Script**
+
+```python
+import subprocess
+import time
+import os
+import json
+import requests
+
+LOG_FILE = "nexus_latency.log"
+ENDPOINT_URL = "https://example.com/latency-metrics"  # Replace with your actual endpoint
+
+def log_latency(operation, start_time, end_time):
+    """Log the latency of an operation."""
+    elapsed_time = end_time - start_time
+    print(f"{operation} completed in {elapsed_time:.2f} seconds.")
+    return elapsed_time
+
+def run_command(command, operation):
+    """Run a shell command and capture its latency."""
+    try:
+        print(f"Starting {operation}...")
+        start_time = time.time()
+        subprocess.run(command, check=True, shell=True)
+        end_time = time.time()
+        return log_latency(operation, start_time, end_time)
+    except subprocess.CalledProcessError as e:
+        print(f"Error during {operation}: {e}")
+        raise
+
+def push_latency_to_endpoint(latency_data):
+    """Send latency data as JSON to an endpoint."""
+    try:
+        headers = {"Content-Type": "application/json"}
+        response = requests.post(ENDPOINT_URL, json=latency_data, headers=headers)
+        response.raise_for_status()
+        print(f"Latency data successfully sent to {ENDPOINT_URL}: {response.status_code}")
+    except requests.RequestException as e:
+        print(f"Failed to send latency data: {e}")
+
+def main():
+    latency_metrics = {}
+
+    # Maven Pull
+    pull_command = (
+        "./mvnw dependency:resolve "
+        "-Drepo.url=https://<nexus-repo-url> "
+        "-Dartifact=com.example:my-artifact:1.0.0"
+    )
+    latency_metrics["maven_pull"] = run_command(pull_command, "Maven Pull")
+
+    # Maven Build
+    build_command = "./mvnw clean install"
+    latency_metrics["maven_build"] = run_command(build_command, "Maven Build")
+
+    # Maven Push
+    push_command = (
+        "./mvnw deploy "
+        "-Drepo.url=https://<nexus-repo-url> "
+        "-Dusername=$NEXUS_USER -Dpassword=$NEXUS_PASS"
+    )
+    latency_metrics["maven_push"] = run_command(push_command, "Maven Push")
+
+    # Add metadata (optional)
+    latency_metrics["timestamp"] = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
+
+    # Save latency metrics to log file (optional)
+    with open(LOG_FILE, "w") as log_file:
+        json.dump(latency_metrics, log_file, indent=4)
+    print(f"Latency metrics saved to {LOG_FILE}.")
+
+    # Push latency metrics to the endpoint
+    push_latency_to_endpoint(latency_metrics)
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+### **Key Features**
+
+1. **Latency Logging**:
+   - Each Maven operation's latency is measured in seconds using `time.time()` and stored in a dictionary.
+
+2. **JSON Formatting**:
+   - Latency data is structured as a JSON object with keys for each operation and a timestamp.
+
+3. **HTTP POST to Endpoint**:
+   - The `requests.post` method sends the JSON payload to the specified endpoint (`ENDPOINT_URL`).
+
+4. **Error Handling**:
+   - Errors during Maven operations or HTTP requests are logged without breaking the pipeline.
+
+---
+
+### **Sample JSON Output**
+This is the JSON payload sent to the endpoint:
+
+```json
+{
+    "maven_pull": 12.45,
+    "maven_build": 45.78,
+    "maven_push": 15.32,
+    "timestamp": "2024-11-21 14:35:00"
+}
+```
+
+---
+
+### **GitLab CI/CD Configuration**
+Update your `.gitlab-ci.yml` file to execute this script:
+
+```yaml
+stages:
+  - test
+
+python-nexus-synthetics:
+  stage: test
+  image: python:3.10
+  before_script:
+    - apt-get update && apt-get install -y default-jdk
+    - chmod +x mvnw  # Ensure Maven Wrapper is executable
+    - pip install --upgrade pip requests
+  script:
+    - echo "Starting Nexus synthetic performance test with JSON output..."
+    - python3 nexus_synthetics.py
+  artifacts:
+    paths:
+      - nexus_latency.log  # Persist the latency log
+    expire_in: 1 week
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+```
+
+---
+
+### **Customization Options**
+
+1. **Endpoint Configuration**:
+   - Replace `https://example.com/latency-metrics` with your actual API endpoint.
+   - Add authentication headers or tokens as needed.
+
+2. **Metric Granularity**:
+   - Include additional metadata (e.g., system load, Nexus response times).
+
+3. **Failure Metrics**:
+   - Add retry logic or capture failed operation durations for better monitoring.
+
+---
+
+### **Testing the Script**
+1. Run the script locally to validate JSON formatting and endpoint connectivity:
+   ```bash
+   python3 nexus_synthetics.py
+   ```
+
+2. Check the pipeline logs to verify the latency data is sent successfully.
+
+---
+
+Let me know if you'd like to extend this further with threshold alerts or advanced monitoring!
